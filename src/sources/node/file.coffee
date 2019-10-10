@@ -2,6 +2,9 @@ EventEmitter = require '../../core/events'
 AVBuffer = require '../../core/buffer'
 fs = require 'fs'
 
+// libMAD needs additional 8 bytes after last frame to decode the last frame!
+MAD_BUFFER = new UInt8Array.from([0, 0, 0, 0, 0, 0, 0, 0]);
+
 class FileSource extends EventEmitter
     constructor: (@filename) ->
         @stream = null
@@ -42,6 +45,7 @@ class FileSource extends EventEmitter
               buf.copy(b, 0, blen)
     
         @stream.on 'end', =>
+            @emit 'data', new AVBuffer(MAD_BUFFER)
             @emit 'end'
             
         @stream.on 'error', (err) =>
